@@ -1,0 +1,220 @@
+@inherits Espace4x.Components.Espace4Tokens<Simplisity.SimplisityRazor>
+@using DNNrocketAPI;
+@using Simplisity;
+@using Espace4x.Components;
+@using DNNrocketAPI.Components;
+@using RocketPortal.Components;
+
+@AddProcessData("resourcepath", "/DesktopModules/DNNrocket/api/App_LocalResources/")
+@AddProcessData("resourcepath", "/DesktopModules/DNNrocketModules/Espace4x/App_LocalResources/")
+
+@{
+    var taskData = (TaskLimpet)Model.List.First();
+    var info = new SimplisityInfo(taskData.Record);
+    var espace4 = new SettingsEspace4Limpet(PortalUtils.GetPortalId(), DNNrocketUtils.GetCurrentCulture());
+    var portalData = new PortalEspace4Limpet(espace4.PortalId, DNNrocketUtils.GetCurrentCulture());
+    var pData = new PortalLimpet(espace4.PortalId);
+
+
+    var taskUrl = pData.EngineUrlWithProtocol + "/espace4x?taskid=" + taskData.TaskId;
+
+
+    var statusColor = "#ff5722"; // open
+    if (taskData.Status == "waiting")
+    {
+        statusColor = "#673ab7";
+    }
+    if (taskData.Status == "inprogress")
+    {
+        statusColor = "#2196F3";
+    }
+    if (taskData.Status == "closed")
+    {
+        statusColor = "#587d38";
+    }
+    if (taskData.Status == "completed")
+    {
+        statusColor = "#4CAF50";
+    }
+
+}
+<div style="background-color:#2196F3;padding:12px;font-size:32px;color:whitesmoke">
+    <a href="@taskUrl" target="espace4" style="text-decoration: none;color:whitesmoke">
+        @ResourceKey("ES.task", espace4.ContactPreferedLanguage): @taskData.Subject
+    </a>
+</div>
+<div class="w3-row w3-padding">
+
+    @if (taskData.HistoryData.ParentTypeCode == "WEBSITE")
+    {
+        var websiteParent = new WebsiteLimpet(taskData.ParentItemId);
+        <div class="w3-half w3-large">
+            @websiteParent.Record.GetXmlProperty("genxml/textbox/name")
+        </div>
+        <div class="w3-half w3-large">
+            @websiteParent.GetDefaultURL()
+            @if (websiteParent.GetDefaultURL() != "")
+            {
+                var protocollink = "http://";
+                if (info.GetXmlPropertyBool("genxml/checkbox/ssl"))
+                {
+                    protocollink = "https://";
+                }
+                <a href="@(protocollink)@websiteParent.GetDefaultURL()" target="_blank">
+                    <span class="material-icons">
+                        open_in_browser
+                    </span>
+                </a>
+                <span>&nbsp;</span>
+                <span class="" onclick="espace.CopyTextToClipboard($('#websiteparenturl'))" style="cursor:pointer;">
+                    <span id="websiteparenturl" class="w3-hide">@websiteParent.GetDefaultURL()</span>
+                    <span id="iconwebsiteparenturl" class="action-clipboardicon">@ButtonIcon(ButtonTypes.copy)</span>
+                </span>
+
+            }
+
+        </div>
+    }
+    @if (taskData.HistoryData.ParentTypeCode == "DOMAIN")
+    {
+        var domainParent = new DomainLimpet(taskData.ParentItemId);
+        <div class="w3-half w3-large">
+            @domainParent.Url
+            @if (domainParent.Url != "")
+            {
+                var protocollink = "https://";
+                <a href="@(protocollink)@domainParent.Url" target="_blank">
+                    <span class="material-icons">
+                        open_in_browser
+                    </span>
+                </a>
+                <span>&nbsp;</span>
+                <span class="" onclick="espace.CopyTextToClipboard($('#domainparenturl'))" style="cursor:pointer;">
+                    <span id="domainparenturl" class="w3-hide">@domainParent.Url</span>
+                    <span id="icondomainparenturl" class="action-clipboardicon">@ButtonIcon(ButtonTypes.copy)</span>
+                </span>
+
+            }
+        </div>
+    }
+    @if (taskData.HistoryData.ParentTypeCode == "CLIENT")
+    {
+        var clientParent = new ClientLimpet(PortalUtils.GetCurrentPortalId(), taskData.ParentItemId);
+        <div class="w3-half w3-large">
+            @clientParent.Company
+        </div>
+        <div class="w3-half w3-large">
+            <span>
+                @clientParent.GetPrimaryContact().FullName
+            </span>
+            <span>
+                &nbsp;
+                @clientParent.GetPrimaryContact().Email
+            </span>
+        </div>
+    }
+    @if (taskData.HistoryData.ParentTypeCode == "INSTALL")
+    {
+        var installParent = new InstallLimpet(taskData.Record.PortalId, taskData.ParentItemId);
+        <div class="w3-half w3-large">
+            @installParent.IISSite
+        </div>
+    }
+    @if (taskData.HistoryData.ParentTypeCode == "VPS")
+    {
+        var vpsParent = new VpsLimpet(taskData.ParentItemId);
+        <div class="w3-half w3-large">
+            @vpsParent.Name
+        </div>
+    }
+    @if (taskData.HistoryData.ParentTypeCode == "PROJECT")
+    {
+        var projectParent = new ProjectLimpet(taskData.ParentItemId);
+        <div class="w3-third w3-large">
+            @projectParent.Name
+        </div>
+        <div class="w3-third w3-large">
+            @projectParent.ClientData.Company
+        </div>
+        <div class="w3-third w3-large">
+            <span>
+                @projectParent.ClientData.GetPrimaryContact().FullName
+            </span>
+            <span>
+                &nbsp;
+                @projectParent.ClientData.GetPrimaryContact().Email
+            </span>
+        </div>
+
+    }
+</div>
+
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+    <tr>
+        <td>
+            <div style="color:@statusColor;padding: 4px 4px;">
+                <h2>@ResourceKey("ES." + taskData.Status, espace4.ContactPreferedLanguage)</h2>
+                <p style="color:black;">
+                    @HtmlOf(ResourceKey("TeamPro" + taskData.Status, "", "Html").ToString())
+                </p>
+            </div>
+        </td>
+    </tr>
+</table>
+
+@if (taskData.Status == "completed")
+{
+    <div style="padding: 4px 4px;font-size:18px;"><b>@ResourceKey("ES.completeddate", espace4.ContactPreferedLanguage): @taskData.CompletedDate.ToShortDateString()</b></div>
+}
+else
+{
+    <div style="padding: 4px 4px;font-size:18px;"><b>@ResourceKey("ES.targetdate", espace4.ContactPreferedLanguage): @taskData.TargetDate.ToShortDateString()</b></div>
+}
+<div style="padding: 4px 4px;">@ResourceKey("ES.assignedto", espace4.ContactPreferedLanguage): <b>@taskData.AssignedEmail</b> </div>
+<div style="padding: 4px 4px;">@ResourceKey("ES.createdby", espace4.ContactPreferedLanguage): <b>@UserUtils.GetUserEmail(taskData.Record.UserId)</b> </div>
+<div style="padding: 4px 4px;">@ResourceKey("ES.creationdate", espace4.ContactPreferedLanguage): @taskData.CreatedDate.ToShortDateString()</div>
+<div style="padding: 4px 4px;">@ResourceKey("ES.copied", espace4.ContactPreferedLanguage):</div>
+@foreach (var e in taskData.EmailList())
+{
+    <div style="">@e</div>
+}
+<br />
+
+@if (taskData.IsBillable)
+{
+    <div class="w3-text-Green">@ResourceKey("ES.invoiced", espace4.ContactPreferedLanguage)</div>
+    <br />
+}
+<hr />
+<p>
+    @BreakOf(taskData.EmailSummary)
+</p>
+<hr />
+
+<table cellspacing="0" cellpadding="0">
+    <tr>
+        <td align="center" width="300" height="40" bgcolor="#000091" style="-webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; color: #ffffff; display: block;">
+            <a href="@taskUrl" target="espace4" style="font-size:16px; font-weight: bold; font-family: Helvetica, Arial, sans-serif; text-decoration: none; line-height:40px; width:100%; display:inline-block"><span style="color: #FFFFFF">@ResourceKey("ES.task", espace4.ContactPreferedLanguage)</span></a>
+        </td>
+    </tr>
+</table>
+
+<h3>History</h3>
+
+<table class="w3-table w3-bordered">
+    <tr>
+        <th></th>
+    </tr>
+    @foreach (SimplisityRecord h in taskData.GetChatList().Reverse<SimplisityRecord>())
+    {
+        <tr>
+            <td>
+                <div>
+                    <b class="w3-tiny">@h.GetXmlProperty("genxml/useremail")</b>
+                    <span class="w3-tiny w3-right">@h.GetXmlPropertyDate("genxml/datetime")</span>
+                </div>
+                @BreakOf(h.GetXmlProperty("genxml/message"))
+            </td>
+        </tr>
+    }
+</table>

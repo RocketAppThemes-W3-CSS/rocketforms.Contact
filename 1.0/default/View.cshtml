@@ -1,0 +1,55 @@
+﻿@inherits RocketContent.Components.RocketContentTokens<Simplisity.SimplisityRazor>
+@using DNNrocketAPI;
+@using Simplisity;
+@using RocketContent.Components;
+@using DNNrocketAPI.Components;
+@using RocketPortal.Components;
+
+@{
+    var info = new SimplisityInfo();
+    var sessionParams = Model.SessionParamsData;
+    var remoteModule = (RemoteModule)Model.GetDataObject("remotemodule");
+}
+
+@AddProcessData("resourcepath", "/DesktopModules/DNNrocket/api/App_LocalResources/")
+@AddProcessData("resourcepath", "/DesktopModules/DNNrocketModules/RocketContent/App_LocalResources/")
+@AddProcessData("resourcepath", "/DesktopModules/RocketThemes/RocketAppThemes-W3-CSS/rocketforms.Contact/1.0/resx/")
+
+<div class="w3-content formdatasection" style="max-width:1200px">
+
+    <div class="w3-row w3-padding">
+        <label class="w3-text-grey">@ResourceKey("Theme.name")</label>
+        @TextBox(info, "genxml/textbox/name", " class='w3-input w3-border'")
+    </div>
+    <div class="w3-row w3-padding">
+        <label class="w3-text-grey">@ResourceKey("Theme.company")</label>
+        @TextBox(info, "genxml/textbox/company", " class='w3-input w3-border'")
+    </div>
+    <div class="w3-row w3-padding">
+        <label class="w3-text-grey">@ResourceKey("Theme.email")</label>
+        @TextBox(info, "genxml/textbox/email", " class='w3-input w3-border'")
+    </div>
+    <div class="w3-row w3-padding">
+        <label class="w3-text-grey">@ResourceKey("Theme.tel")</label>
+        @TextBox(info, "genxml/textbox/tel", " class='w3-input w3-border'")
+    </div>
+    <div class="w3-row w3-padding">
+        <label class="w3-text-grey">@ResourceKey("Theme.message")</label>
+        <div>@TextArea(info, "genxml/textbox/message", "rows='4'  class='w3-input w3-border'")</div>
+    </div>
+
+    <div class="w3-row w3-center formdatareturn">
+        <div class="w3-button w3-green w3-large w3-padding-16 simplisity_click" s-cmd="rocketforms_postform" s-cmdurl="/DesktopModules/CDSviewerDNN/apihandler.ashx" s-post=".formdatasection" s-return=".formdatareturn" s-fields='{"moduleref":"@remoteModule.ModuleRef","systemkey":"rocketforms"}'>@ResourceKey("Theme.send")</div>
+    </div>
+
+
+</div>
+
+
+<script>
+    $(document).ready(function () {
+        $('.formdatasection').activateSimplisityPanel()
+        simplisity_setSessionField("culturecode", '@sessionParams.CultureCode'); // ensure client API call has correct langauge.
+    });
+</script>
+
